@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* App container */
+.App {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #030B35;
+  /*color: #ffffff; */
+  overflow: hidden;
+
+}
+
+/* Centered heading */
+.title {
+  font-size: 2em;
+  margin-top: 20px;
+  color: #ffffff;
+  text-align: center;
+  width: 100%;
+}
+
+/* Container for the 3D model, centered */
+.canvas-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: calc(100vh - 80px); /* Subtract heading height */
+  background-color: #ffffff;
+}
+
+
+
+
