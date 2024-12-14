@@ -1,41 +1,121 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Button } from 'react-native';
-import Slider from '@react-native-community/slider';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 
 const SetPressureScreen = ({ onNext }) => {
-  const [pressure, setPressure] = useState(12); // Default value
+  const [tubePressure, setTubePressure] = useState(12); // Default value for CPAP pressure
+  const [foreheadPressure, setForeheadPressure] = useState(null);
+  const [backPressure, setBackPressure] = useState(null);
+  const [sensorData, setSensorData] = useState({ forehead: 0, back: 0 });
+  const [foreheadEditable, setForeheadEditable] = useState(true);
+  const [backEditable, setBackEditable] = useState(true);
+
+  useEffect(() => {
+    const connectToArduino = () => {
+      const ws = new WebSocket('ws://192.168.0.123:8082'); // Replace with your WebSocket server address
+
+      ws.onmessage = (event) => {
+        const data = event.data.trim();
+        const parsedData = data.split('\n').reduce((acc, line) => {
+          if (line.includes('FSR1_Hinterkopf')) {
+            const match = line.match(/Force = ([0-9.]+)/);
+            if (match) acc.back = parseFloat(match[1]);
+          } else if (line.includes('FSR2_Stirn')) {
+            const match = line.match(/Force = ([0-9.]+)/);
+            if (match) acc.forehead = parseFloat(match[1]);
+          }
+          return acc;
+        }, {});
+        setSensorData((prev) => ({ ...prev, ...parsedData }));
+      };
+
+      ws.onopen = () => console.log('WebSocket connected');
+      ws.onerror = (err) => console.error('WebSocket error:', err);
+      ws.onclose = () => console.log('WebSocket closed');
+
+      return () => ws.close();
+    };
+
+    connectToArduino();
+  }, []);
 
   const handleNext = () => {
-    if (pressure >= 6 && pressure <= 20) {
-      onNext(pressure); // Pass the entered pressure to the next screen
+    if (tubePressure >= 6 && tubePressure <= 20 && foreheadPressure != null && backPressure != null) {
+      onNext({
+        tube: tubePressure,
+        forehead: foreheadPressure,
+        back: backPressure,
+      });
+    } else {
+      console.error('Invalid pressure values. Please check your inputs.');
     }
-  };
-
-  const handleChange = (value) => {
-    setPressure(value);
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Set Your CPAP Pressure</Text>
-      <Text style={styles.description}>Please move the slider to set your ideal air pressure value.</Text>
-      <Text style={styles.selectedPressure}>Selected Pressure: {pressure}</Text>
-      <Slider
-        style={styles.slider}
-        minimumValue={6}
-        maximumValue={20}
-        step={1}
-        value={pressure}
-        onValueChange={handleChange}
+      <Text style={styles.title}>Set Your Ideal Pressures</Text>
+
+      {/* CPAP Pressure Slider */}
+      <Text style={styles.description}>Set Your CPAP Pressure:</Text>
+      <TextInput
+        style={styles.input}
+        keyboardType="numeric"
+        value={String(tubePressure)}
+        onChangeText={(value) => setTubePressure(parseFloat(value) || 12)}
       />
-      <Text style={styles.consultText}>
-        Consult your healthcare provider to determine your ideal pressure, typically ranging between 6 and 14 cmH₂O.
-      </Text>
-      <Button
-        title="Next"
-        onPress={handleNext}
-        color="#6f4ef2"
+
+      {/* Forehead Pressure Input */}
+      <Text style={styles.description}>Forehead Pressure:</Text>
+      <TextInput
+        style={styles.input}
+        editable={foreheadEditable}
+        value={foreheadEditable ? sensorData.forehead?.toFixed(2) || '0.00' : foreheadPressure?.toFixed(2) || '0.00'}
       />
+      <View style={styles.buttonGroup}>
+        <Button
+          title="Set as Ideal"
+          onPress={() => {
+            setForeheadPressure(sensorData.forehead);
+            setForeheadEditable(false);
+          }}
+          disabled={!foreheadEditable}
+        />
+        <Button
+          title="Unset"
+          onPress={() => {
+            setForeheadPressure(null);
+            setForeheadEditable(true);
+          }}
+          disabled={foreheadEditable}
+        />
+      </View>
+
+      {/* Back Pressure Input */}
+      <Text style={styles.description}>Back Pressure:</Text>
+      <TextInput
+        style={styles.input}
+        editable={backEditable}
+        value={backEditable ? sensorData.back?.toFixed(2) || '0.00' : backPressure?.toFixed(2) || '0.00'}
+      />
+      <View style={styles.buttonGroup}>
+        <Button
+          title="Set as Ideal"
+          onPress={() => {
+            setBackPressure(sensorData.back);
+            setBackEditable(false);
+          }}
+          disabled={!backEditable}
+        />
+        <Button
+          title="Unset"
+          onPress={() => {
+            setBackPressure(null);
+            setBackEditable(true);
+          }}
+          disabled={backEditable}
+        />
+      </View>
+
+      <Button title="Next" onPress={handleNext} />
     </View>
   );
 };
@@ -50,30 +130,27 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    color: '#333',
+    fontWeight: 'bold',
     marginBottom: 16,
-    textAlign: 'center',
   },
   description: {
-    color: '#666',
-    marginBottom: 16,
-    textAlign: 'center',
+    fontSize: 16,
+    marginBottom: 8,
   },
-  selectedPressure: {
-    fontSize: 20,
-    color: '#333',
+  input: {
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 4,
+    padding: 8,
     marginBottom: 16,
-    textAlign: 'center',
-  },
-  slider: {
     width: '80%',
-    height: 40,
-    marginBottom: 16,
-  },
-  consultText: {
-    color: '#666',
-    marginBottom: 16,
     textAlign: 'center',
+  },
+  buttonGroup: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '60%',
+    marginBottom: 16,
   },
 });
 

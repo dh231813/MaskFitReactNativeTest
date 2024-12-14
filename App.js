@@ -6,12 +6,12 @@ import ThreeScene from './ThreeScene';
 
 function App() {
   const [currentStep, setCurrentStep] = useState(0);
-  const [pressure, setPressure] = useState(12);
+  const [idealPressures, setIdealPressures] = useState(null);
   const [displayedDeviation, setDisplayedDeviation] = useState(12);
   const [fittingScore, setFittingScore] = useState(50);
 
-  const handleNextStep = (pressure) => {
-    setPressure(pressure);
+  const handleNextStep = (values) => {
+    setIdealPressures(values); // Set all ideal pressures
     setCurrentStep(currentStep + 1);
   };
 
@@ -25,13 +25,16 @@ function App() {
         <SetPressureScreen onNext={handleNextStep} />
       )}
 
-      {currentStep === 2 && (
+      {currentStep === 2 && idealPressures && (
         <View style={styles.resultsContainer}>
           <Text style={styles.title}>MaskFit</Text>
-          <Text style={styles.text}>Ideal pressure is {pressure} cmH₂O</Text>
+          <Text style={styles.text}>Ideal pressures:</Text>
+          <Text style={styles.text}>Forehead: {idealPressures.forehead} kg</Text>
+          <Text style={styles.text}>Back: {idealPressures.back} kg</Text>
+          <Text style={styles.text}>Tube: {idealPressures.tube} cmH₂O</Text>
 
           <ThreeScene
-            pressure={pressure}
+            idealPressures={idealPressures}
             setDisplayedDeviation={setDisplayedDeviation}
             setFittingScore={setFittingScore}
           />

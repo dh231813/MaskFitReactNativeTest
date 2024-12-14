@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, Button } from 'react-native';
-import placeholderImage from './assets/icon.png';
+import placeholderImage from './assets/welcome_image.png';
 
 const WelcomeScreen = ({ onNext }) => {
   return (
