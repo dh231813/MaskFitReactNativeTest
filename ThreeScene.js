@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, Image } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome'; // Importing icons for checkmark and warning
 
 const ThreeScene = ({ idealPressures, setDisplayedDeviation, setFittingScore }) => {
   const [sensorData, setSensorData] = useState({ forehead: 0, back: 0, tube: 0 });
   const [deviations, setDeviations] = useState({ forehead: 0, back: 0, tube: 0 });
-  const [statusMessages, setStatusMessages] = useState({ forehead: '', back: '', tube: '' });
 
   useEffect(() => {
     const connectToArduino = () => {
-      const ws = new WebSocket('ws://192.168.0.123:8082'); // Replace with your WebSocket server address
+      const ws = new WebSocket('ws://10.55.102.32:8082'); // WebSocket server address
 
       ws.onopen = () => {
         console.log('WebSocket connection established');
@@ -55,39 +55,81 @@ const ThreeScene = ({ idealPressures, setDisplayedDeviation, setFittingScore }) 
   useEffect(() => {
     if (idealPressures && sensorData) {
       const calculatedDeviations = {
-        forehead: sensorData.forehead != null ? Math.abs(sensorData.forehead - idealPressures.forehead) : NaN,
-        back: sensorData.back != null ? Math.abs(sensorData.back - idealPressures.back) : NaN,
-        tube: sensorData.tube != null ? Math.abs(sensorData.tube - idealPressures.tube) : NaN,
+        forehead: sensorData.forehead != null ? sensorData.forehead - idealPressures.forehead : NaN,
+        back: sensorData.back != null ? sensorData.back - idealPressures.back : NaN,
+        tube: sensorData.tube != null ? sensorData.tube - idealPressures.tube : NaN,
       };
       setDeviations(calculatedDeviations);
       setDisplayedDeviation(calculatedDeviations);
       console.log('Updated deviations:', calculatedDeviations);
-
-      const newStatusMessages = {
-        forehead: calculatedDeviations.forehead > 3 ? 'High deviation for forehead!' : 'Forehead pressure OK.',
-        back: calculatedDeviations.back > 3 ? 'High deviation for back!' : 'Back pressure OK.',
-        tube: calculatedDeviations.tube > 3 ? 'High deviation for tube!' : 'Tube pressure OK.',
-      };
-      setStatusMessages(newStatusMessages);
     }
   }, [sensorData, idealPressures]);
 
+  const getBackgroundColor = (deviation) => {
+    return Math.abs(deviation) > 1 ? 'rgba(162, 0, 0, 0.8)' : 'rgba(11, 36, 71, 0.8)'; // Translucent red or blue
+  };
+
+  const renderIcon = (deviation) => {
+    if (Math.abs(deviation) > 1) {
+      return <Icon name="exclamation-circle" size={40} color="rgb(255, 127, 127)" style={styles.icon} />;
+    } else {
+      return <Icon name="check-circle" size={40} color="green" style={styles.icon} />;
+    }
+  };
+
+  const formatDeviation = (deviation) => {
+    if (isNaN(deviation)) return 'N/A';
+    return `${deviation > 0 ? '+' : ''}${deviation.toFixed(2)}`; // Adds + for positive deviations
+  };
+
   return (
     <View style={styles.container}>
-      <View style={{ ...styles.marker, backgroundColor: 'red' }}>
-        <Text style={styles.markerText}>Forehead: {sensorData.forehead?.toFixed(2) || '0.00'}</Text>
-        <Text style={styles.deviationText}>Deviation: {isNaN(deviations.forehead) ? 'N/A' : deviations.forehead.toFixed(2)}</Text>
-        <Text style={styles.statusMessage}>{statusMessages.forehead}</Text>
+      <Image
+        source={require('./assets/welcome_image.png')} // Base image
+        style={styles.baseImage}
+      />
+
+      {/* Forehead marker */}
+      <View style={[styles.marker, { backgroundColor: getBackgroundColor(deviations.forehead), top: 40, left:30, }]}>
+        {renderIcon(deviations.forehead)}
+        <Text style={styles.placementText}>Forehead</Text>
+        <Text style={styles.valueText}>{sensorData.forehead?.toFixed(2) || '0.00'}</Text>
+        <Text style={styles.deviationValue}>{formatDeviation(deviations.forehead)}</Text>
       </View>
-      <View style={{ ...styles.marker, backgroundColor: 'blue' }}>
-        <Text style={styles.markerText}>Back: {sensorData.back?.toFixed(2) || '0.00'}</Text>
-        <Text style={styles.deviationText}>Deviation: {isNaN(deviations.back) ? 'N/A' : deviations.back.toFixed(2)}</Text>
-        <Text style={styles.statusMessage}>{statusMessages.back}</Text>
+
+      {/* Back marker */}
+      <View style={[styles.marker, { backgroundColor: getBackgroundColor(deviations.back), top: 50, right: 60 }]}>
+        {renderIcon(deviations.back)}
+        <Text style={styles.placementText}>Back</Text>
+        <Text style={styles.valueText}>{sensorData.back?.toFixed(2) || '0.00'}</Text>
+        <Text style={styles.deviationValue}>{formatDeviation(deviations.back)}</Text>
       </View>
-      <View style={{ ...styles.marker, backgroundColor: 'green' }}>
-        <Text style={styles.markerText}>Tube: {sensorData.tube?.toFixed(2) || '0.00'} cmH₂O</Text>
-        <Text style={styles.deviationText}>Deviation: {isNaN(deviations.tube) ? 'N/A' : deviations.tube.toFixed(2)} cmH₂O</Text>
-        <Text style={styles.statusMessage}>{statusMessages.tube}</Text>
+
+      {/* Tube marker */}
+      <View style={[styles.marker, { backgroundColor: getBackgroundColor(deviations.tube), top: 380, left: 20 }]}>
+        {renderIcon(deviations.tube)}
+        <Text style={styles.placementText}>Tube</Text>
+        <Text style={styles.valueText}>{sensorData.tube?.toFixed(2) || '0.00'} cmH₂O</Text>
+        <Text style={styles.deviationValue}>{formatDeviation(deviations.tube)}</Text>
+      </View>
+
+      {/* Ideal values display at the bottom */}
+      <View style={styles.idealValuesContainer}>
+        <Text style={styles.idealValuesHeading}>Your Ideal Values</Text>
+        <View style={styles.idealValuesRow}>
+          <View style={styles.idealValueBox}>
+            <Text style={styles.idealValueTitle}>Forehead</Text>
+            <Text style={styles.idealValueText}>{idealPressures?.forehead?.toFixed(2) || 'N/A'}</Text>
+          </View>
+          <View style={styles.idealValueBox}>
+            <Text style={styles.idealValueTitle}>Back</Text>
+            <Text style={styles.idealValueText}>{idealPressures?.back?.toFixed(2) || 'N/A'}</Text>
+          </View>
+          <View style={styles.idealValueBox}>
+            <Text style={styles.idealValueTitle}>Tube</Text>
+            <Text style={styles.idealValueText}>{idealPressures?.tube?.toFixed(2) || 'N/A'}</Text>
+          </View>
+        </View>
       </View>
     </View>
   );
@@ -98,30 +140,84 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#030B35',
+    backgroundColor: '#030B35', // Always dark mode
   },
-  marker: {
-    width: 150,
-    height: 100,
+  baseImage: {
+    position: 'absolute',
+    width: 500,
+    height: 650,
+  },
+  idealValuesContainer: {
+    width: '100%',
+    backgroundColor: '#020924',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.3)',
+    position: 'absolute',
+    bottom: 0,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  idealValuesHeading: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  idealValuesRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    width: '100%',
+  },
+  idealValueBox: {
     justifyContent: 'center',
     alignItems: 'center',
-    margin: 10,
+    padding: 10,
+    backgroundColor: 'rgba(11, 36, 71, 0.8)',
     borderRadius: 8,
+    width: 100,
   },
-  markerText: {
+  idealValueTitle: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  idealValueText: {
     color: 'white',
     fontSize: 16,
   },
-  deviationText: {
+  marker: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)', // Light border for better contrast
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    padding: 12,
+  },
+  placementText: {
     color: 'white',
     fontSize: 14,
     marginTop: 5,
   },
-  statusMessage: {
-    color: 'yellow',
-    fontSize: 14,
+  valueText: {
+    color: 'white',
+    fontSize: 18,
     fontWeight: 'bold',
     marginTop: 5,
+  },
+  deviationValue: {
+    color: 'white',
+    fontSize: 14,
+    marginTop: 5,
+  },
+  icon: {
+    marginBottom: 8, // Add spacing between the icon and the text
   },
 });
 

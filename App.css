@@ -9,7 +9,6 @@
   align-items: center;
   min-height: 100vh;
   background-color: #030B35;
-  /*color: #ffffff; */
   overflow: hidden;
 
 }
@@ -30,8 +29,8 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: calc(100vh - 80px); /* Subtract heading height */
-  background-color: #ffffff;
+  
+  background-color: #030B35;
 }
 
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, Button } from 'react-native';
-import placeholderImage from './assets/welcome_image.png';
+import placeholderImage from './assets/icon.png';
 
 const WelcomeScreen = ({ onNext }) => {
   return (
@@ -30,11 +30,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#030A34',
   },
   image: {
-    width: 100,
-    height: 100,
+    width: 300,
+    height: 300,
     borderRadius: 16,
     marginBottom: 16,
   },
