@@ -27,11 +27,8 @@ function App() {
 
       {currentStep === 2 && idealPressures && (
         <View style={styles.resultsContainer}>
-          <Text style={styles.title}>MaskFit</Text>
-          <Text style={styles.text}>Ideal pressures:</Text>
-          <Text style={styles.text}>Forehead: {idealPressures.forehead} kg</Text>
-          <Text style={styles.text}>Back: {idealPressures.back} kg</Text>
-          <Text style={styles.text}>Tube: {idealPressures.tube} cmH₂O</Text>
+      
+          
 
           <ThreeScene
             idealPressures={idealPressures}
@@ -47,23 +44,27 @@ function App() {
 const styles = StyleSheet.create({
   appContainer: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#030B35', // Dark background for the entire app
   },
   resultsContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    backgroundColor: '#030B35', // Ensure consistent dark mode
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 16,
+    color: 'white', // Text color for dark mode
   },
   text: {
     fontSize: 16,
     marginBottom: 8,
+    color: 'white', // Text color for dark mode
   },
 });
+
 
 export default App;

@@ -11,7 +11,7 @@ const SetPressureScreen = ({ onNext }) => {
 
   useEffect(() => {
     const connectToArduino = () => {
-      const ws = new WebSocket('ws://192.168.0.123:8082'); // Replace with your WebSocket server address
+      const ws = new WebSocket('ws://10.55.102.32:8082'); // Replace with your WebSocket server address
 
       ws.onmessage = (event) => {
         const data = event.data.trim();
@@ -71,7 +71,7 @@ const SetPressureScreen = ({ onNext }) => {
         value={foreheadEditable ? sensorData.forehead?.toFixed(2) || '0.00' : foreheadPressure?.toFixed(2) || '0.00'}
       />
       <View style={styles.buttonGroup}>
-        <Button
+        <Button color="#6f4ef2"
           title="Set as Ideal"
           onPress={() => {
             setForeheadPressure(sensorData.forehead);
@@ -79,7 +79,7 @@ const SetPressureScreen = ({ onNext }) => {
           }}
           disabled={!foreheadEditable}
         />
-        <Button
+        <Button color="#6f4ef2"
           title="Unset"
           onPress={() => {
             setForeheadPressure(null);
@@ -97,15 +97,15 @@ const SetPressureScreen = ({ onNext }) => {
         value={backEditable ? sensorData.back?.toFixed(2) || '0.00' : backPressure?.toFixed(2) || '0.00'}
       />
       <View style={styles.buttonGroup}>
-        <Button
-          title="Set as Ideal"
+        <Button color="#6f4ef2"
+          title="Set as Ideal" 
           onPress={() => {
             setBackPressure(sensorData.back);
             setBackEditable(false);
           }}
           disabled={!backEditable}
         />
-        <Button
+        <Button color="#6f4ef2"
           title="Unset"
           onPress={() => {
             setBackPressure(null);
@@ -115,7 +115,7 @@ const SetPressureScreen = ({ onNext }) => {
         />
       </View>
 
-      <Button title="Next" onPress={handleNext} />
+      <Button title="Next" onPress={handleNext} color="#6f4ef2" />
     </View>
   );
 };
@@ -126,16 +126,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 16,
+    color:'white',
   },
   description: {
     fontSize: 16,
     marginBottom: 8,
+    color:'white',
   },
   input: {
     borderWidth: 1,
@@ -145,12 +147,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     width: '80%',
     textAlign: 'center',
+    color:'white',
   },
   buttonGroup: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '60%',
     marginBottom: 16,
+    
   },
 });
 
